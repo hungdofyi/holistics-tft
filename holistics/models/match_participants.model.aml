@@ -104,10 +104,10 @@ Model match_participants {
   }
 
   measure win_rate {
-    label: 'Win Rate'
+    label: 'Win Rate (1st)'
     type: 'number'
     definition: @aql safe_divide(
-      count_if(match_participants.win == true),
+      count_if(match_participants.placement == 1),
       count(match_participants.id)
     ) ;;
   }

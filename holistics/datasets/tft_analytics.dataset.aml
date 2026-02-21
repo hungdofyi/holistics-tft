@@ -46,11 +46,11 @@ Dataset tft_analytics {
   }
 
   metric unit_win_rate {
-    label: 'Unit Win Rate'
+    label: 'Unit Win Rate (1st)'
     type: 'number'
-    description: 'Win rate of players using this champion'
+    description: '1st place rate of players using this champion'
     definition: @aql safe_divide(
-      count_if(match_participants.win == true),
+      count_if(match_participants.placement == 1),
       count(participant_units.id)
     ) ;;
   }
@@ -82,11 +82,11 @@ Dataset tft_analytics {
   }
 
   metric item_win_rate {
-    label: 'Item Win Rate'
+    label: 'Item Win Rate (1st)'
     type: 'number'
-    description: 'Win rate when this item is equipped'
+    description: '1st place rate when this item is equipped'
     definition: @aql safe_divide(
-      count_if(match_participants.win == true),
+      count_if(match_participants.placement == 1),
       count(unit_items.id)
     ) ;;
   }
