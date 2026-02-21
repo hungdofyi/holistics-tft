@@ -1,16 +1,16 @@
 -- 001_initial.sql
--- TFT Analytics Schema
+-- TFT Analytics Schema (aligned with current Riot API 2025+)
 
 CREATE TABLE IF NOT EXISTS matches (
     match_id VARCHAR(64) PRIMARY KEY,
     data_version VARCHAR(8),
     game_datetime BIGINT,
     game_length REAL,
-    game_version VARCHAR(64),
+    game_version VARCHAR(256),
     queue_id INT,
     tft_game_type VARCHAR(32),
     tft_set_number INT,
-    tft_set_core_name VARCHAR(64),
+    tft_set_core_name VARCHAR(128),
     region VARCHAR(16),
     ingested_at TIMESTAMP DEFAULT NOW()
 );
@@ -25,7 +25,10 @@ CREATE TABLE IF NOT EXISTS match_participants (
     last_round INT,
     players_eliminated INT,
     time_eliminated REAL,
-    total_damage_to_players INT
+    total_damage_to_players INT,
+    riot_id_game_name VARCHAR(128),
+    riot_id_tagline VARCHAR(64),
+    win BOOLEAN
 );
 
 CREATE TABLE IF NOT EXISTS participant_augments (
@@ -56,13 +59,11 @@ CREATE TABLE IF NOT EXISTS participant_units (
 CREATE TABLE IF NOT EXISTS unit_items (
     id SERIAL PRIMARY KEY,
     unit_id INT REFERENCES participant_units(id),
-    item_id INT,
     item_name VARCHAR(128)
 );
 
 CREATE TABLE IF NOT EXISTS league_entries (
     id SERIAL PRIMARY KEY,
-    summoner_id VARCHAR(128),
     puuid VARCHAR(128),
     tier VARCHAR(16),
     rank VARCHAR(8),
@@ -70,7 +71,8 @@ CREATE TABLE IF NOT EXISTS league_entries (
     wins INT,
     losses INT,
     region VARCHAR(16),
-    updated_at TIMESTAMP DEFAULT NOW()
+    updated_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE (puuid, region)
 );
 
 -- Indexes

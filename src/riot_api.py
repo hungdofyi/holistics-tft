@@ -77,12 +77,6 @@ class RiotAPIClient:
         url = f"https://{platform}.api.riotgames.com/tft/league/v1/master"
         return self._get(url)
 
-    # -- Account endpoint (to get PUUID from summoner ID) --
-
-    def get_summoner_by_id(self, platform: str, summoner_id: str) -> dict:
-        url = f"https://{platform}.api.riotgames.com/tft/summoner/v1/summoners/{summoner_id}"
-        return self._get(url)
-
     # -- Match endpoints (regional routing) --
 
     def get_match_ids(self, region: str, puuid: str, count: int = 20, start: int = 0) -> list[str]:

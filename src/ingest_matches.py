@@ -5,17 +5,9 @@ import os
 import psycopg2
 from dotenv import load_dotenv
 
-from src.riot_api import RiotAPIClient, LEAGUE_PLATFORMS
+from src.riot_api import RiotAPIClient
 
 load_dotenv()
-
-
-def get_region_for_puuid(conn, puuid: str) -> str:
-    """Look up which region a PUUID belongs to from league_entries."""
-    with conn.cursor() as cur:
-        cur.execute("SELECT region FROM league_entries WHERE puuid = %s LIMIT 1", (puuid,))
-        row = cur.fetchone()
-        return row[0] if row else "americas"
 
 
 def match_exists(conn, match_id: str) -> bool:
@@ -60,8 +52,9 @@ def insert_match(conn, match_data: dict, region: str) -> None:
                 """
                 INSERT INTO match_participants
                     (match_id, puuid, placement, level, gold_left, last_round,
-                     players_eliminated, time_eliminated, total_damage_to_players)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                     players_eliminated, time_eliminated, total_damage_to_players,
+                     riot_id_game_name, riot_id_tagline, win)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING id
                 """,
                 (
@@ -74,11 +67,14 @@ def insert_match(conn, match_data: dict, region: str) -> None:
                     participant.get("players_eliminated"),
                     participant.get("time_eliminated"),
                     participant.get("total_damage_to_players"),
+                    participant.get("riotIdGameName", ""),
+                    participant.get("riotIdTagline", ""),
+                    participant.get("win"),
                 ),
             )
             participant_id = cur.fetchone()[0]
 
-            # Insert augments
+            # Insert augments (not present in all sets, e.g. Set 16)
             for i, augment in enumerate(participant.get("augments", [])):
                 cur.execute(
                     """
@@ -124,20 +120,14 @@ def insert_match(conn, match_data: dict, region: str) -> None:
                 )
                 unit_id = cur.fetchone()[0]
 
-                # Insert items
-                item_names = unit.get("itemNames", [])
-                item_ids = unit.get("items", [])
-                for j in range(len(item_names)):
+                # Insert items (current API only has itemNames, no integer IDs)
+                for item_name in unit.get("itemNames", []):
                     cur.execute(
                         """
-                        INSERT INTO unit_items (unit_id, item_id, item_name)
-                        VALUES (%s, %s, %s)
+                        INSERT INTO unit_items (unit_id, item_name)
+                        VALUES (%s, %s)
                         """,
-                        (
-                            unit_id,
-                            item_ids[j] if j < len(item_ids) else None,
-                            item_names[j],
-                        ),
+                        (unit_id, item_name),
                     )
 
     conn.commit()

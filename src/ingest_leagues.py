@@ -16,13 +16,6 @@ TIERS = [
 ]
 
 
-def platform_to_region(platform: str) -> str:
-    for region, platforms in LEAGUE_PLATFORMS.items():
-        if platform in platforms:
-            return region
-    return "americas"
-
-
 def ingest_leagues() -> None:
     client = RiotAPIClient()
     conn = psycopg2.connect(os.environ["DATABASE_URL"])
@@ -43,25 +36,22 @@ def ingest_leagues() -> None:
                         print(f"  Found {len(entries)} entries")
 
                         for entry in entries:
-                            summoner_id = entry["summonerId"]
-
-                            # Get PUUID from summoner endpoint
-                            try:
-                                summoner = client.get_summoner_by_id(platform, summoner_id)
-                                puuid = summoner["puuid"]
-                            except Exception as e:
-                                print(f"  Skipping summoner {summoner_id}: {e}")
-                                continue
+                            puuid = entry["puuid"]
 
                             cur.execute(
                                 """
                                 INSERT INTO league_entries
-                                    (summoner_id, puuid, tier, rank, league_points, wins, losses, region, updated_at)
-                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW())
-                                ON CONFLICT (id) DO NOTHING
+                                    (puuid, tier, rank, league_points, wins, losses, region, updated_at)
+                                VALUES (%s, %s, %s, %s, %s, %s, %s, NOW())
+                                ON CONFLICT (puuid, region) DO UPDATE SET
+                                    tier = EXCLUDED.tier,
+                                    rank = EXCLUDED.rank,
+                                    league_points = EXCLUDED.league_points,
+                                    wins = EXCLUDED.wins,
+                                    losses = EXCLUDED.losses,
+                                    updated_at = NOW()
                                 """,
                                 (
-                                    summoner_id,
                                     puuid,
                                     tier_name,
                                     entry.get("rank", ""),
