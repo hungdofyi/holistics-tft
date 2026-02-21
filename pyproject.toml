@@ -1,0 +1,15 @@
+[project]
+name = "holistics-tft"
+version = "0.1.0"
+description = "TFT data pipeline for Holistics dashboard"
+requires-python = ">=3.14"
+dependencies = [
+    "requests>=2.31.0",
+    "psycopg2-binary>=2.9.9",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
