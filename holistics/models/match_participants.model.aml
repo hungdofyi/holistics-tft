@@ -10,86 +10,86 @@ Model match_participants {
     type: 'number'
     primary_key: true
     hidden: true
-    definition: @sql {{#SOURCE.id}} ;;
+    definition: @sql {{ #SOURCE.id }} ;;
   }
 
   dimension match_id {
     label: 'Match ID'
     type: 'text'
     hidden: true
-    definition: @sql {{#SOURCE.match_id}} ;;
+    definition: @sql {{ #SOURCE.match_id }} ;;
   }
 
   dimension puuid {
     label: 'PUUID'
     type: 'text'
     hidden: true
-    definition: @sql {{#SOURCE.puuid}} ;;
+    definition: @sql {{ #SOURCE.puuid }} ;;
   }
 
   dimension riot_id_game_name {
     label: 'Player Name'
     type: 'text'
-    definition: @sql {{#SOURCE.riot_id_game_name}} ;;
+    definition: @sql {{ #SOURCE.riot_id_game_name }} ;;
   }
 
   dimension riot_id_tagline {
     label: 'Tagline'
     type: 'text'
-    definition: @sql {{#SOURCE.riot_id_tagline}} ;;
-  }
-
-  // Derived: "PlayerName#TAG"
-  dimension player_display_name {
-    label: 'Player'
-    type: 'text'
-    definition: @sql {{#SOURCE.riot_id_game_name}} || '#' || {{#SOURCE.riot_id_tagline}} ;;
+    definition: @sql {{ #SOURCE.riot_id_tagline }} ;;
   }
 
   dimension placement {
     label: 'Placement'
     type: 'number'
-    definition: @sql {{#SOURCE.placement}} ;;
+    definition: @sql {{ #SOURCE.placement }} ;;
   }
 
   dimension level {
     label: 'Level'
     type: 'number'
-    definition: @sql {{#SOURCE.level}} ;;
+    definition: @sql {{ #SOURCE.level }} ;;
   }
 
   dimension gold_left {
     label: 'Gold Left'
     type: 'number'
-    definition: @sql {{#SOURCE.gold_left}} ;;
+    definition: @sql {{ #SOURCE.gold_left }} ;;
   }
 
   dimension last_round {
     label: 'Last Round'
     type: 'number'
-    definition: @sql {{#SOURCE.last_round}} ;;
+    definition: @sql {{ #SOURCE.last_round }} ;;
   }
 
   dimension total_damage_to_players {
     label: 'Total Damage'
     type: 'number'
-    definition: @sql {{#SOURCE.total_damage_to_players}} ;;
+    definition: @sql {{ #SOURCE.total_damage_to_players }} ;;
   }
 
   dimension win {
     label: 'Win'
     type: 'truefalse'
-    definition: @sql {{#SOURCE.win}} ;;
+    definition: @sql {{ #SOURCE.win }} ;;
   }
 
-  // Derived: top 4 flag
+  // Derived dimensions
+
+  dimension player_display_name {
+    label: 'Player'
+    type: 'text'
+    definition: @aql concat(match_participants.riot_id_game_name, '#', match_participants.riot_id_tagline) ;;
+  }
+
   dimension is_top_4 {
     label: 'Is Top 4'
     type: 'truefalse'
-    definition: @sql {{#SOURCE.placement}} <= 4 ;;
+    definition: @aql match_participants.placement <= 4 ;;
   }
 
-  // --- Measures ---
+  // Measures
 
   measure games_played {
     label: 'Games Played'

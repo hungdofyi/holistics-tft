@@ -10,71 +10,70 @@ Model participant_traits {
     type: 'number'
     primary_key: true
     hidden: true
-    definition: @sql {{#SOURCE.id}} ;;
+    definition: @sql {{ #SOURCE.id }} ;;
   }
 
   dimension participant_id {
     label: 'Participant ID'
     type: 'number'
     hidden: true
-    definition: @sql {{#SOURCE.participant_id}} ;;
+    definition: @sql {{ #SOURCE.participant_id }} ;;
   }
 
   dimension trait_name {
-    label: 'Trait'
+    label: 'Trait ID'
     type: 'text'
-    definition: @sql {{#SOURCE.trait_name}} ;;
-  }
-
-  // Derived: clean trait name (strip "TFT16_" prefix)
-  dimension trait_display_name {
-    label: 'Trait Name'
-    type: 'text'
-    definition: @sql regexp_replace({{#SOURCE.trait_name}}, '^TFT\d+_', '') ;;
+    definition: @sql {{ #SOURCE.trait_name }} ;;
   }
 
   dimension num_units {
     label: 'Num Units'
     type: 'number'
-    definition: @sql {{#SOURCE.num_units}} ;;
+    definition: @sql {{ #SOURCE.num_units }} ;;
   }
 
   dimension tier_current {
     label: 'Tier (Current)'
     type: 'number'
-    definition: @sql {{#SOURCE.tier_current}} ;;
+    definition: @sql {{ #SOURCE.tier_current }} ;;
   }
 
   dimension tier_total {
     label: 'Tier (Total)'
     type: 'number'
-    definition: @sql {{#SOURCE.tier_total}} ;;
+    definition: @sql {{ #SOURCE.tier_total }} ;;
   }
 
   dimension style {
     label: 'Style'
     type: 'number'
-    definition: @sql {{#SOURCE.style}} ;;
+    definition: @sql {{ #SOURCE.style }} ;;
   }
 
-  // Derived: style as text
+  // Derived dimensions
+
+  dimension trait_display_name {
+    label: 'Trait'
+    type: 'text'
+    definition: @aql regexp_replace(participant_traits.trait_name, '^TFT\\\\d+_', '') ;;
+  }
+
   dimension style_label {
     label: 'Tier Label'
     type: 'text'
-    definition: @sql CASE {{#SOURCE.style}}
-      WHEN 0 THEN 'Inactive'
-      WHEN 1 THEN 'Bronze'
-      WHEN 2 THEN 'Silver'
-      WHEN 3 THEN 'Gold'
-      WHEN 4 THEN 'Chromatic'
-      ELSE 'Unknown'
-    END ;;
+    definition: @aql case(
+      when: participant_traits.style == 0, then: 'Inactive',
+      when: participant_traits.style == 1, then: 'Bronze',
+      when: participant_traits.style == 2, then: 'Silver',
+      when: participant_traits.style == 3, then: 'Gold',
+      when: participant_traits.style == 4, then: 'Chromatic',
+      else: 'Unknown'
+    ) ;;
   }
 
-  // Derived: is this trait actually active?
   dimension is_active {
     label: 'Is Active'
     type: 'truefalse'
-    definition: @sql {{#SOURCE.style}} > 0 ;;
+    definition: @aql participant_traits.style > 0 ;;
   }
 }

@@ -10,26 +10,27 @@ Model unit_items {
     type: 'number'
     primary_key: true
     hidden: true
-    definition: @sql {{#SOURCE.id}} ;;
+    definition: @sql {{ #SOURCE.id }} ;;
   }
 
   dimension unit_id {
     label: 'Unit ID'
     type: 'number'
     hidden: true
-    definition: @sql {{#SOURCE.unit_id}} ;;
+    definition: @sql {{ #SOURCE.unit_id }} ;;
   }
 
   dimension item_name {
     label: 'Item ID'
     type: 'text'
-    definition: @sql {{#SOURCE.item_name}} ;;
+    definition: @sql {{ #SOURCE.item_name }} ;;
   }
 
-  // Derived: clean item name (strip "TFT_Item_" prefix)
+  // Derived dimensions
+
   dimension item_display_name {
     label: 'Item'
     type: 'text'
-    definition: @sql regexp_replace({{#SOURCE.item_name}}, '^TFT_Item_', '') ;;
+    definition: @aql replace(unit_items.item_name, 'TFT_Item_', '') ;;
   }
 }

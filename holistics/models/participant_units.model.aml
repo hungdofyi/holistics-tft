@@ -10,45 +10,45 @@ Model participant_units {
     type: 'number'
     primary_key: true
     hidden: true
-    definition: @sql {{#SOURCE.id}} ;;
+    definition: @sql {{ #SOURCE.id }} ;;
   }
 
   dimension participant_id {
     label: 'Participant ID'
     type: 'number'
     hidden: true
-    definition: @sql {{#SOURCE.participant_id}} ;;
+    definition: @sql {{ #SOURCE.participant_id }} ;;
   }
 
   dimension character_id {
     label: 'Champion ID'
     type: 'text'
-    definition: @sql {{#SOURCE.character_id}} ;;
-  }
-
-  // Derived: clean champion name (strip "TFT16_" prefix)
-  dimension champion_name {
-    label: 'Champion'
-    type: 'text'
-    definition: @sql regexp_replace({{#SOURCE.character_id}}, '^TFT\d+_', '') ;;
+    definition: @sql {{ #SOURCE.character_id }} ;;
   }
 
   dimension tier {
     label: 'Star Level'
     type: 'number'
-    definition: @sql {{#SOURCE.tier}} ;;
+    definition: @sql {{ #SOURCE.tier }} ;;
   }
 
   dimension rarity {
     label: 'Cost'
     type: 'number'
-    definition: @sql {{#SOURCE.rarity}} ;;
+    definition: @sql {{ #SOURCE.rarity }} ;;
   }
 
-  // Derived: star display (e.g. "3★")
+  // Derived dimensions
+
+  dimension champion_name {
+    label: 'Champion'
+    type: 'text'
+    definition: @aql regexp_replace(participant_units.character_id, '^TFT\\\\d+_', '') ;;
+  }
+
   dimension star_display {
     label: 'Stars'
     type: 'text'
-    definition: @sql {{#SOURCE.tier}} || '★' ;;
+    definition: @aql concat(cast(participant_units.tier, 'text'), '★') ;;
   }
 }
