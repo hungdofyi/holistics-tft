@@ -1,0 +1,159 @@
+Dataset tft_analytics {
+  label: 'TFT Analytics'
+  description: 'TFT match analytics dashboard — comps, units, items, augments, players'
+  data_source_name: 'heo_sao_mai_tft'
+
+  models: [
+    matches,
+    match_participants,
+    participant_traits,
+    participant_units,
+    unit_items,
+    league_entries,
+    participant_augments
+  ]
+
+  relationships: [
+    relationship(match_participants.match_id > matches.match_id, true),
+    relationship(participant_traits.participant_id > match_participants.id, true),
+    relationship(participant_units.participant_id > match_participants.id, true),
+    relationship(unit_items.unit_id > participant_units.id, true),
+    relationship(participant_augments.participant_id > match_participants.id, true),
+    relationship(match_participants.puuid > league_entries.puuid, false)
+  ]
+
+  // =============================================
+  // CROSS-MODEL METRICS (require joins)
+  // =============================================
+
+  // --- Unit Stats (unit → participant) ---
+
+  metric unit_avg_placement {
+    label: 'Unit Avg Placement'
+    type: 'number'
+    description: 'Average placement of players using this champion'
+    definition: @aql average(match_participants.placement) ;;
+  }
+
+  metric unit_pick_rate {
+    label: 'Unit Pick Rate'
+    type: 'number'
+    description: 'How often a champion is picked across all participants'
+    definition: @aql safe_divide(
+      count(participant_units.id),
+      count(match_participants.id)
+    ) ;;
+  }
+
+  metric unit_win_rate {
+    label: 'Unit Win Rate'
+    type: 'number'
+    description: 'Win rate of players using this champion'
+    definition: @aql safe_divide(
+      count_if(match_participants.win == true),
+      count(participant_units.id)
+    ) ;;
+  }
+
+  metric unit_top_4_rate {
+    label: 'Unit Top 4 Rate'
+    type: 'number'
+    description: 'Top 4 rate of players using this champion'
+    definition: @aql safe_divide(
+      count_if(match_participants.placement <= 4),
+      count(participant_units.id)
+    ) ;;
+  }
+
+  // --- Item Stats (item → unit → participant) ---
+
+  metric item_avg_placement {
+    label: 'Item Avg Placement'
+    type: 'number'
+    description: 'Average placement when this item is equipped'
+    definition: @aql average(match_participants.placement) ;;
+  }
+
+  metric item_pick_count {
+    label: 'Item Pick Count'
+    type: 'number'
+    description: 'Total times this item was equipped'
+    definition: @aql count(unit_items.id) ;;
+  }
+
+  metric item_win_rate {
+    label: 'Item Win Rate'
+    type: 'number'
+    description: 'Win rate when this item is equipped'
+    definition: @aql safe_divide(
+      count_if(match_participants.win == true),
+      count(unit_items.id)
+    ) ;;
+  }
+
+  // --- Trait/Comp Stats (trait → participant → match) ---
+
+  metric trait_avg_placement {
+    label: 'Trait Avg Placement'
+    type: 'number'
+    description: 'Average placement when this trait is active'
+    definition: @aql average(match_participants.placement) ;;
+  }
+
+  metric trait_play_rate {
+    label: 'Trait Play Rate'
+    type: 'number'
+    description: 'How often this trait appears across all participants'
+    definition: @aql safe_divide(
+      count(participant_traits.id),
+      count(match_participants.id)
+    ) ;;
+  }
+
+  metric trait_top_4_rate {
+    label: 'Trait Top 4 Rate'
+    type: 'number'
+    description: 'Top 4 rate when this trait is active'
+    definition: @aql safe_divide(
+      count_if(match_participants.placement <= 4),
+      count(participant_traits.id)
+    ) ;;
+  }
+
+  // =============================================
+  // DATASET VIEWS (organize for exploration)
+  // =============================================
+
+  view {
+    // Core exploration models
+    model matches {}
+    model match_participants {}
+    model league_entries {}
+
+    group comp_stats {
+      model participant_traits {}
+      metric trait_avg_placement
+      metric trait_play_rate
+      metric trait_top_4_rate
+    }
+
+    group unit_stats {
+      model participant_units {}
+      metric unit_avg_placement
+      metric unit_pick_rate
+      metric unit_win_rate
+      metric unit_top_4_rate
+    }
+
+    group item_stats {
+      model unit_items {}
+      metric item_avg_placement
+      metric item_pick_count
+      metric item_win_rate
+    }
+
+    group augment_stats {
+      model participant_augments {}
+    }
+  }
+}

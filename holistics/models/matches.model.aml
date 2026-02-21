@@ -1,0 +1,64 @@
+Model matches {
+  type: 'table'
+  label: 'Matches'
+  description: 'TFT match metadata'
+  data_source_name: 'heo_sao_mai_tft'
+  table_name: '"public"."matches"'
+
+  dimension match_id {
+    label: 'Match ID'
+    type: 'text'
+    primary_key: true
+    hidden: true
+    definition: @sql {{#SOURCE.match_id}} ;;
+  }
+
+  dimension region {
+    label: 'Region'
+    type: 'text'
+    definition: @sql {{#SOURCE.region}} ;;
+  }
+
+  dimension tft_game_type {
+    label: 'Game Type'
+    type: 'text'
+    definition: @sql {{#SOURCE.tft_game_type}} ;;
+  }
+
+  dimension tft_set_number {
+    label: 'Set Number'
+    type: 'number'
+    definition: @sql {{#SOURCE.tft_set_number}} ;;
+  }
+
+  dimension game_version {
+    label: 'Game Version'
+    type: 'text'
+    definition: @sql {{#SOURCE.game_version}} ;;
+  }
+
+  // Derived: extract patch number (e.g. "16.3" from the full version string)
+  dimension patch {
+    label: 'Patch'
+    type: 'text'
+    definition: @sql regexp_extract({{#SOURCE.game_version}}, 'Releases/(\d+\.\d+)', 1) ;;
+  }
+
+  dimension game_datetime {
+    label: 'Game Date'
+    type: 'datetime'
+    definition: @sql to_timestamp({{#SOURCE.game_datetime}} / 1000) ;;
+  }
+
+  dimension game_length {
+    label: 'Game Length (s)'
+    type: 'number'
+    definition: @sql {{#SOURCE.game_length}} ;;
+  }
+
+  measure total_matches {
+    label: 'Total Matches'
+    type: 'number'
+    definition: @aql count(matches.match_id) ;;
+  }
+}

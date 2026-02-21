@@ -1,0 +1,58 @@
+Model league_entries {
+  type: 'table'
+  label: 'League Entries'
+  description: 'Ranked ladder data (Challenger/GM/Master)'
+  data_source_name: 'heo_sao_mai_tft'
+  table_name: '"public"."league_entries"'
+
+  dimension id {
+    label: 'ID'
+    type: 'number'
+    primary_key: true
+    hidden: true
+    definition: @sql {{#SOURCE.id}} ;;
+  }
+
+  dimension puuid {
+    label: 'PUUID'
+    type: 'text'
+    hidden: true
+    definition: @sql {{#SOURCE.puuid}} ;;
+  }
+
+  dimension tier {
+    label: 'Tier'
+    type: 'text'
+    definition: @sql {{#SOURCE.tier}} ;;
+  }
+
+  dimension rank {
+    label: 'Rank'
+    type: 'text'
+    definition: @sql {{#SOURCE.rank}} ;;
+  }
+
+  dimension league_points {
+    label: 'LP'
+    type: 'number'
+    definition: @sql {{#SOURCE.league_points}} ;;
+  }
+
+  dimension wins {
+    label: 'Wins'
+    type: 'number'
+    definition: @sql {{#SOURCE.wins}} ;;
+  }
+
+  dimension losses {
+    label: 'Losses'
+    type: 'number'
+    definition: @sql {{#SOURCE.losses}} ;;
+  }
+
+  dimension region {
+    label: 'Region'
+    type: 'text'
+    definition: @sql {{#SOURCE.region}} ;;
+  }
+}

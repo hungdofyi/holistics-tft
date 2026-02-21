@@ -1,0 +1,34 @@
+Model participant_augments {
+  type: 'table'
+  label: 'Participant Augments'
+  description: 'Augment picks per participant (not present in all sets)'
+  data_source_name: 'heo_sao_mai_tft'
+  table_name: '"public"."participant_augments"'
+
+  dimension id {
+    label: 'ID'
+    type: 'number'
+    primary_key: true
+    hidden: true
+    definition: @sql {{#SOURCE.id}} ;;
+  }
+
+  dimension participant_id {
+    label: 'Participant ID'
+    type: 'number'
+    hidden: true
+    definition: @sql {{#SOURCE.participant_id}} ;;
+  }
+
+  dimension augment_id {
+    label: 'Augment'
+    type: 'text'
+    definition: @sql {{#SOURCE.augment_id}} ;;
+  }
+
+  dimension pick_order {
+    label: 'Pick Order'
+    type: 'number'
+    definition: @sql {{#SOURCE.pick_order}} ;;
+  }
+}

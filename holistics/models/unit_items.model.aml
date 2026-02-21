@@ -1,0 +1,35 @@
+Model unit_items {
+  type: 'table'
+  label: 'Unit Items'
+  description: 'Items equipped on units'
+  data_source_name: 'heo_sao_mai_tft'
+  table_name: '"public"."unit_items"'
+
+  dimension id {
+    label: 'ID'
+    type: 'number'
+    primary_key: true
+    hidden: true
+    definition: @sql {{#SOURCE.id}} ;;
+  }
+
+  dimension unit_id {
+    label: 'Unit ID'
+    type: 'number'
+    hidden: true
+    definition: @sql {{#SOURCE.unit_id}} ;;
+  }
+
+  dimension item_name {
+    label: 'Item ID'
+    type: 'text'
+    definition: @sql {{#SOURCE.item_name}} ;;
+  }
+
+  // Derived: clean item name (strip "TFT_Item_" prefix)
+  dimension item_display_name {
+    label: 'Item'
+    type: 'text'
+    definition: @sql regexp_replace({{#SOURCE.item_name}}, '^TFT_Item_', '') ;;
+  }
+}

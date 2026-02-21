@@ -1,0 +1,129 @@
+Model match_participants {
+  type: 'table'
+  label: 'Match Participants'
+  description: 'Per-player results in each TFT match'
+  data_source_name: 'heo_sao_mai_tft'
+  table_name: '"public"."match_participants"'
+
+  dimension id {
+    label: 'Participant ID'
+    type: 'number'
+    primary_key: true
+    hidden: true
+    definition: @sql {{#SOURCE.id}} ;;
+  }
+
+  dimension match_id {
+    label: 'Match ID'
+    type: 'text'
+    hidden: true
+    definition: @sql {{#SOURCE.match_id}} ;;
+  }
+
+  dimension puuid {
+    label: 'PUUID'
+    type: 'text'
+    hidden: true
+    definition: @sql {{#SOURCE.puuid}} ;;
+  }
+
+  dimension riot_id_game_name {
+    label: 'Player Name'
+    type: 'text'
+    definition: @sql {{#SOURCE.riot_id_game_name}} ;;
+  }
+
+  dimension riot_id_tagline {
+    label: 'Tagline'
+    type: 'text'
+    definition: @sql {{#SOURCE.riot_id_tagline}} ;;
+  }
+
+  // Derived: "PlayerName#TAG"
+  dimension player_display_name {
+    label: 'Player'
+    type: 'text'
+    definition: @sql {{#SOURCE.riot_id_game_name}} || '#' || {{#SOURCE.riot_id_tagline}} ;;
+  }
+
+  dimension placement {
+    label: 'Placement'
+    type: 'number'
+    definition: @sql {{#SOURCE.placement}} ;;
+  }
+
+  dimension level {
+    label: 'Level'
+    type: 'number'
+    definition: @sql {{#SOURCE.level}} ;;
+  }
+
+  dimension gold_left {
+    label: 'Gold Left'
+    type: 'number'
+    definition: @sql {{#SOURCE.gold_left}} ;;
+  }
+
+  dimension last_round {
+    label: 'Last Round'
+    type: 'number'
+    definition: @sql {{#SOURCE.last_round}} ;;
+  }
+
+  dimension total_damage_to_players {
+    label: 'Total Damage'
+    type: 'number'
+    definition: @sql {{#SOURCE.total_damage_to_players}} ;;
+  }
+
+  dimension win {
+    label: 'Win'
+    type: 'truefalse'
+    definition: @sql {{#SOURCE.win}} ;;
+  }
+
+  // Derived: top 4 flag
+  dimension is_top_4 {
+    label: 'Is Top 4'
+    type: 'truefalse'
+    definition: @sql {{#SOURCE.placement}} <= 4 ;;
+  }
+
+  // --- Measures ---
+
+  measure games_played {
+    label: 'Games Played'
+    type: 'number'
+    definition: @aql count(match_participants.id) ;;
+  }
+
+  measure avg_placement {
+    label: 'Avg Placement'
+    type: 'number'
+    definition: @aql average(match_participants.placement) ;;
+  }
+
+  measure win_rate {
+    label: 'Win Rate'
+    type: 'number'
+    definition: @aql safe_divide(
+      count_if(match_participants.win == true),
+      count(match_participants.id)
+    ) ;;
+  }
+
+  measure top_4_rate {
+    label: 'Top 4 Rate'
+    type: 'number'
+    definition: @aql safe_divide(
+      count_if(match_participants.placement <= 4),
+      count(match_participants.id)
+    ) ;;
+  }
+
+  measure unique_players {
+    label: 'Unique Players'
+    type: 'number'
+    definition: @aql count_distinct(match_participants.puuid) ;;
+  }
+}
