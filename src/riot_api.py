@@ -51,15 +51,17 @@ class RiotAPIClient:
 
         self._request_times.append(time.time())
 
-    def _get(self, url: str) -> Any:
-        """Make a rate-limited GET request."""
+    def _get(self, url: str, _retries: int = 0) -> Any:
+        """Make a rate-limited GET request with max 3 retries on 429."""
         self._rate_limit()
         resp = self.session.get(url)
         if resp.status_code == 429:
+            if _retries >= 3:
+                resp.raise_for_status()
             retry_after = int(resp.headers.get("Retry-After", 10))
-            print(f"429 Too Many Requests: retrying after {retry_after}s")
+            print(f"429 Too Many Requests: retrying after {retry_after}s (attempt {_retries + 1}/3)")
             time.sleep(retry_after)
-            return self._get(url)
+            return self._get(url, _retries=_retries + 1)
         resp.raise_for_status()
         return resp.json()
 
