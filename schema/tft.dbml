@@ -1,0 +1,76 @@
+Project tft_analytics {
+  database_type: 'PostgreSQL'
+  Note: 'TFT match data from Riot API for Holistics dashboard'
+}
+
+Table matches {
+  match_id varchar [pk, note: 'e.g. NA1_1234567']
+  data_version varchar
+  game_datetime bigint [note: 'epoch ms from API']
+  game_length float [note: 'seconds']
+  game_version varchar [note: 'patch version']
+  queue_id int
+  tft_game_type varchar [note: 'standard, turbo, etc.']
+  tft_set_number int
+  tft_set_core_name varchar
+  region varchar [note: 'americas, europe, asia']
+  ingested_at timestamp [default: `now()`]
+}
+
+Table match_participants {
+  id serial [pk]
+  match_id varchar [ref: > matches.match_id]
+  puuid varchar
+  placement int [note: '1-8']
+  level int
+  gold_left int
+  last_round int
+  players_eliminated int
+  time_eliminated float
+  total_damage_to_players int
+}
+
+Table participant_augments {
+  id serial [pk]
+  participant_id int [ref: > match_participants.id]
+  augment_id varchar [note: 'e.g. TFT9_Augment_CyberneticImplants']
+  pick_order int [note: '1, 2, or 3']
+}
+
+Table participant_traits {
+  id serial [pk]
+  participant_id int [ref: > match_participants.id]
+  trait_name varchar [note: 'e.g. Set9_Demacia']
+  num_units int
+  tier_current int
+  tier_total int
+  style int [note: '0=inactive, 1=bronze, 2=silver, 3=gold, 4=chromatic']
+}
+
+Table participant_units {
+  id serial [pk]
+  participant_id int [ref: > match_participants.id]
+  character_id varchar [note: 'e.g. TFT9_Yasuo']
+  tier int [note: 'star level 1-3']
+  rarity int [note: 'cost tier']
+}
+
+Table unit_items {
+  id serial [pk]
+  unit_id int [ref: > participant_units.id]
+  item_id int
+  item_name varchar
+}
+
+Table league_entries {
+  id serial [pk]
+  summoner_id varchar
+  puuid varchar
+  tier varchar [note: 'CHALLENGER, GRANDMASTER, MASTER']
+  rank varchar
+  league_points int
+  wins int
+  losses int
+  region varchar
+  updated_at timestamp [default: `now()`]
+}
